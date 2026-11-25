@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Common Matter</title>
+<meta name="description" content="Real engineering records, turned into labs for AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<style>
+:root {
+  --paper: #f5f2eb; --panel: #fffdf8; --ink: #1c1a17; --muted: #6b655b;
+  --line: #ddd5c6; --line-strong: #bfb5a3;
+  --heat: #c2410c; --heat-soft: #fbe6d8; --amber: #d97706;
+  --ok: #2f7a3e; --ok-soft: #e1efe1; --bad: #b42318; --bad-soft: #f8e1dd;
+  --code-bg: #1c1a17; --code-ink: #e9e3d8; --code-dim: #8f877a;
+  --serif: "Instrument Serif", Georgia, serif;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #131210; --panel: #1b1a17; --ink: #ece6dc; --muted: #a39b8e; --line: #2f2c27; --line-strong: #4a453d;
+    --heat: #f07a3a; --heat-soft: #3a2116; --amber: #f2a93b; --ok: #7fc28a; --ok-soft: #1c2b1e; --bad: #f08a80; --bad-soft: #351a17;
+    --code-bg: #0c0b0a; --code-dim: #7d766b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #131210; --panel: #1b1a17; --ink: #ece6dc; --muted: #a39b8e; --line: #2f2c27; --line-strong: #4a453d;
+  --heat: #f07a3a; --heat-soft: #3a2116; --amber: #f2a93b; --ok: #7fc28a; --ok-soft: #1c2b1e; --bad: #f08a80; --bad-soft: #351a17;
+  --code-bg: #0c0b0a; --code-dim: #7d766b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.5 var(--sans); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+button { font: inherit; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+@media (max-width: 640px) { .wrap { padding: 0 16px; } }
+svg text { font-family: var(--mono); }
+.hidden { display: none !important; }
+
+header.nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; }
+.nav-links { display: flex; gap: 24px; font-size: 14px; }
+.nav-links a { text-decoration: none; color: var(--muted); }
+@media (max-width: 720px) { .nav-links { display: none; } }
+.btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 11px 20px; font: 500 14px/1 var(--sans); text-decoration: none; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--heat); }
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -.01em; margin: 0; }
+h1 { font-size: clamp(42px, 6vw, 76px); line-height: 1; }
+h2 { font-size: clamp(34px, 4.4vw, 52px); line-height: 1.05; }
+h1 em, h2 em { font-style: italic; color: var(--heat); }
+section { padding: 84px 0; border-bottom: 1px solid var(--line); }
+@media (max-width: 640px) { section { padding: 56px 0; } }
+.head { display: grid; gap: 14px; margin-bottom: 28px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.label { font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+
+pre.term { margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 16px 18px; font: 400 12.5px/1.65 var(--mono); overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+.term .c { color: var(--code-dim); } .term .p { color: #f0a868; } .term .s { color: #8fd19e; } .term .m { color: var(--code-dim); font-style: italic; }
+.term .line { opacity: 0; animation: in .2s forwards; }
+
+/* Hero + lab */
+.hero { padding: 44px 0 28px; border-bottom: 0; }
+.hero .wrap { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; }
+.hero h1 { max-width: 14ch; }
+.hero-side { display: grid; gap: 14px; justify-items: start; max-width: 340px; }
+.howto { display: grid; gap: 8px; font: 500 14px/1.25 var(--sans); }
+.howto span { display: flex; gap: 10px; align-items: center; }
+.howto b { font: 500 12px/1 var(--mono); color: var(--heat); width: 18px; }
+.lab { padding-top: 0; }
+.lab-grid { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 960px) { .lab-grid { grid-template-columns: 1fr; } }
+.col { display: grid; gap: 16px; min-width: 0; }
+
+.stage { position: relative; height: 560px; border-radius: 16px; overflow: hidden; background: #c8c2b8; border: 1px solid var(--line); }
+@media (max-width: 960px) { .stage { height: 420px; } }
+@media (max-width: 560px) { .stage { height: 340px; } }
+.stage canvas { display: block; }
+.stage .loading { position: absolute; inset: 0; display: grid; place-items: center; font: 500 12px/1 var(--mono); color: #5e5a52; letter-spacing: .1em; text-transform: uppercase; }
+.hud { position: absolute; left: 12px; right: 12px; top: 12px; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; z-index: 2; }
+.hud > * { pointer-events: auto; }
+.chip-hud { background: rgba(255,253,248,.9); color: #1c1a17; border: 1px solid rgba(0,0,0,.08); border-radius: 999px; padding: 8px 12px; font: 500 12px/1 var(--mono); display: flex; gap: 10px; align-items: center; backdrop-filter: blur(6px); }
+.chip-hud .bar { width: 90px; height: 5px; background: #ddd5c6; border-radius: 9px; overflow: hidden; }
+.chip-hud .bar i { display: block; height: 100%; background: #c2410c; transition: width .4s; }
+.chip-hud button { all: unset; cursor: pointer; white-space: nowrap; }
+.st-label { pointer-events: auto; cursor: pointer; font: 500 11px/1 var(--mono); letter-spacing: .04em; color: #e9f2f4; background: rgba(16,33,43,.88); border: 1px solid rgba(77,213,237,.5); padding: 6px 8px; border-radius: 6px; white-space: nowrap; display: flex; gap: 6px; align-items: center; transition: transform .15s; }
+.st-label:hover { transform: translateY(-2px); }
+.st-label .n { color: #8fd6e6; }
+.st-label.done { border-color: #51e19a; }
+.st-label.done .n { color: #51e19a; }
+.st-label.on { background: #c2410c; border-color: #fbe6d8; }
+.st-label.on .n { color: #fff; }
+.st-label.case { background: rgba(180,35,24,.92); border-color: #f8e1dd; }
+.st-label .short { display: none; }
+.narrow .st-label { font-size: 10px; padding: 5px 6px; }
+.narrow .st-label .full, .narrow .st-label .n { display: none; }
+.narrow .st-label .short { display: inline; }
+
+/* Panels */
+.case-row { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; }
+.case-row svg { width: 100%; }
+.legend { display: grid; gap: 5px; font: 400 13px/1.3 var(--mono); }
+.legend span { display: flex; align-items: center; gap: 8px; }
+.legend i { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
+.board { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+@media (max-width: 960px) { .board { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 480px) { .board { grid-template-columns: 1fr 1fr; } }
+.suspect { position: relative; display: grid; gap: 6px; justify-items: start; text-align: left; padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; min-height: 88px; transition: opacity .4s, border-color .3s, background .3s, transform .2s; }
+.suspect:hover { transform: translateY(-1px); border-color: var(--line-strong); }
+.suspect svg { width: 24px; height: 24px; }
+.suspect b { font: 500 13px/1.2 var(--sans); }
+.suspect .why { font: 400 10.5px/1.25 var(--mono); color: var(--muted); min-height: 13px; }
+.suspect.out { opacity: .42; }
+.suspect.out b { text-decoration: line-through; }
+.suspect.out::after { content: "✕"; position: absolute; top: 8px; right: 9px; color: var(--bad); font: 600 15px/1 var(--mono); }
+.suspect.lead { border-color: var(--heat); background: var(--heat-soft); }
+.suspect.lead .why { color: var(--heat); }
+.suspect.flash { animation: flash .6s ease; }
+@keyframes flash { 40% { transform: scale(1.05); } }
+
+.stations { display: grid; gap: 10px; }
+.sgroup { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--paper); transition: border-color .3s, background .3s; }
+.sgroup.on { border-color: var(--heat); background: var(--heat-soft); }
+.sgroup .sh { font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; cursor: pointer; }
+.tests { display: flex; flex-wrap: wrap; gap: 6px; }
+.test { display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 7px 11px; cursor: pointer; font: 500 13px/1.2 var(--sans); }
+.test:hover:not(:disabled) { border-color: var(--heat); }
+.test .cost { font: 400 11px/1 var(--mono); color: var(--muted); }
+.test.ran { border-style: dashed; color: var(--muted); cursor: default; }
+.test:disabled:not(.ran) { opacity: .35; cursor: not-allowed; }
+
+.result { display: grid; align-content: start; gap: 10px; }
+.result svg { width: 100%; height: auto; display: block; }
+.result .said { font: 500 15px/1.4 var(--sans); }
+.effects { display: flex; flex-wrap: wrap; gap: 6px; }
+.fx { font: 500 12px/1 var(--mono); padding: 7px 10px; border-radius: 999px; }
+.fx.out { background: var(--bad-soft); color: var(--bad); } .fx.lead { background: var(--heat-soft); color: var(--heat); } .fx.none { background: var(--line); color: var(--muted); }
+.stamp { justify-self: start; font: 600 14px/1 var(--mono); letter-spacing: .1em; padding: 12px 16px; border: 2px solid currentColor; border-radius: 6px; transform: rotate(-3deg); margin: 14px 0; }
+.stamp.none { color: var(--muted); } .stamp.pass { color: var(--ok); }
+.ask { display: grid; gap: 12px; border-color: var(--heat) !important; }
+.ask .q { font: 500 16px/1.3 var(--sans); }
+.ask .row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.outcome { margin-top: 16px; }
+.tiles3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
+.sc { border-radius: 12px; padding: 14px; text-align: center; font: 500 12px/1.2 var(--mono); background: var(--line); color: var(--muted); }
+.sc b { display: block; font: 400 28px/1 var(--serif); margin-bottom: 6px; color: var(--ink); }
+.sc.ok { background: var(--ok-soft); color: var(--ok); } .sc.ok b { color: var(--ok); }
+.sc.bad { background: var(--bad-soft); color: var(--bad); } .sc.bad b { color: var(--bad); }
+.paths { display: grid; gap: 14px; }
+.path { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: center; }
+@media (max-width: 560px) { .path { grid-template-columns: 1fr; gap: 6px; } }
+.path > span { font: 500 12px/1.3 var(--mono); color: var(--muted); }
+.trail { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.st { font: 500 12px/1 var(--mono); padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); opacity: 0; animation: in .3s forwards; }
+.st.void { color: var(--muted); border-style: dashed; }
+.st.end-ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.st.end-bad { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.ar { color: var(--line-strong); font: 400 12px/1 var(--mono); opacity: 0; animation: in .3s forwards; }
+@keyframes in { to { opacity: 1; } }
+.replay { margin-top: 22px; }
+.rl { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); font: 500 15px/1.4 var(--sans); }
+.rl svg { width: 120px; height: 60px; flex: none; }
+.note { font: 400 12px/1.5 var(--mono); color: var(--muted); margin-top: 14px; }
+
+/* Owners */
+.owners { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 800px) { .owners { grid-template-columns: 1fr; } }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font: 500 14px/1 var(--sans); }
+.chip.yes::before { content: "✓"; color: var(--ok); font-weight: 600; }
+.chip.no { color: var(--muted); } .chip.no::before { content: "✕"; color: var(--bad); }
+.flow { display: flex; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+.flow .node { padding: 14px 16px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--panel); font: 500 14px/1.2 var(--sans); }
+.flow .node small { display: block; font: 400 11px/1.3 var(--mono); color: var(--muted); margin-top: 4px; }
+.flow .arr { width: 36px; height: 2px; background: var(--line-strong); position: relative; }
+.flow .arr::after { content: ""; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left-color: var(--line-strong); }
+@media (max-width: 560px) { .flow { flex-direction: column; align-items: stretch; } .flow .arr { width: 2px; height: 20px; margin: 0 auto; } .flow .arr::after { right: -4px; top: auto; bottom: -1px; border-left-color: transparent; border-top-color: var(--line-strong); } }
+
+/* AI teams */
+.transform { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: stretch; }
+.transform .arrow { display: grid; place-items: center; font: 400 22px/1 var(--mono); color: var(--heat); }
+@media (max-width: 860px) { .transform { grid-template-columns: 1fr; } .transform .arrow { transform: rotate(90deg); } }
+.sheet { background: #fbf8f0; color: #2b2721; border: 1px solid var(--line-strong); border-radius: 6px; padding: 16px 18px; font: 400 12.5px/1.6 var(--mono); box-shadow: 0 10px 24px -16px rgba(0,0,0,.35); transform: rotate(-.6deg); }
+.sheet h4 { margin: 0 0 8px; font: 600 12px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.sheet table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+.sheet td { border-bottom: 1px dashed #cfc6b4; padding: 3px 0; vertical-align: top; }
+.sheet td:last-child { text-align: right; }
+.sheet .hand { font-family: "Instrument Serif", serif; font-style: italic; font-size: 17px; color: #1f3d8a; }
+.sheet .blank { color: #a69e8f; }
+.gets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+@media (max-width: 800px) { .gets { grid-template-columns: 1fr 1fr; } }
+.get { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--panel); }
+.get b { display: block; font: 400 22px/1.1 var(--serif); margin-bottom: 4px; }
+.get small { font: 400 12px/1.3 var(--mono); color: var(--muted); }
+.chart { margin-top: 20px; }
+.cases { display: grid; grid-template-columns: auto repeat(3, auto); gap: 12px 22px; align-items: center; justify-content: start; font: 400 12px/1.3 var(--mono); color: var(--muted); }
+.cases .d { display: flex; gap: 6px; }
+.dot { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+.dot.r { background: var(--ok); } .dot.w { background: var(--bad); }
+
+footer { padding: 32px 0 48px; font: 400 13px/1.6 var(--mono); color: var(--muted); }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="5" fill="var(--heat)"/></svg>
+      Common Matter
+    </a>
+    <nav class="nav-links"><a href="#lab">Lab</a><a href="#owners">Record owners</a><a href="#ai">AI teams</a></nav>
+    <a class="btn ghost" href="mailto:leann@commonmatter.ai">Contact</a>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div style="display:grid;gap:18px">
+      <span class="eyebrow">Engineering data for AI</span>
+      <h1>Real engineering records, turned into <em>labs</em> for AI.</h1>
+    </div>
+    <div class="hero-side">
+      <div class="howto">
+        <span><b>01</b>5 compressor blades broke.</span>
+        <span><b>02</b>Run tests at the stations.</span>
+        <span><b>03</b>Clues cross out causes.</span>
+        <span><b>04</b>Name the cause.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lab" id="lab">
+  <div class="wrap">
+    <div class="lab-grid">
+      <div class="col">
+        <div class="stage" id="stage">
+          <div class="loading" id="stage-loading">Loading the lab…</div>
+          <div class="hud">
+            <div class="chip-hud"><span>Budget</span><span class="bar"><i id="hud-bar" style="width:100%"></i></span><b id="hud-budget">$4,000</b></div>
+            <div class="chip-hud"><button id="hud-overview">⌂ Overview</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="label"><span>Possible causes</span><span id="left-count">6 left · click one when you know</span></div>
+          <div class="board" id="board"></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card ask hidden" id="ask">
+          <div class="q">Your answer: <span id="ask-cause" style="color:var(--heat)"></span>. Restart the compressor?</div>
+          <div class="row"><button class="btn" data-restart="no">Not yet, inspect every blade</button><button class="btn ghost" data-restart="yes">Yes, swap broken blades</button></div>
+          <button class="btn ghost" id="ask-cancel" style="justify-self:start;border:0;padding-left:0">← keep testing</button>
+        </div>
+        <div class="card result" id="result"></div>
+        <div class="card">
+          <div class="label"><span>Stations</span><span>tap a test</span></div>
+          <div class="stations" id="stations"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card outcome hidden" id="outcome">
+      <div class="tiles3" id="tiles"></div>
+      <div class="label"><span>Same case, three investigators</span></div>
+      <div class="paths">
+        <div class="path"><span>AI · no tests</span><div class="trail" id="p-ai0"></div></div>
+        <div class="path"><span>AI · with tests</span><div class="trail" id="p-ai1"></div></div>
+        <div class="path"><span>You</span><div class="trail" id="p-you"></div></div>
+      </div>
+      <div class="replay">
+        <div class="label"><span>The AI's actual session</span><span>pilot run 2c00abf9</span></div>
+        <pre class="term" id="term"></pre>
+      </div>
+      <div class="rl">
+        <svg viewBox="0 0 120 60" aria-hidden="true"><ellipse cx="60" cy="30" rx="44" ry="20" fill="none" stroke="var(--line-strong)" stroke-dasharray="3 4"/><g font-size="9" fill="var(--muted)" text-anchor="middle"><text x="60" y="8">test</text><text x="112" y="33">clue</text><text x="60" y="58">score</text><text x="8" y="33">try</text></g><circle r="4" fill="var(--heat)"><animateMotion dur="3s" repeatCount="indefinite" path="M16 30 A44 20 0 1 1 104 30 A44 20 0 1 1 16 30"/></circle></svg>
+        <span>This lab is an <b>RL environment</b>. AI practices it thousands of times, on cases built from real records.</span>
+      </div>
+      <div style="margin-top:18px"><button class="btn ghost" id="again">Play again</button></div>
+    </div>
+
+    <p class="note">Case from <a href="https://doi.org/10.3390/ma19183965">Materials, 2026</a> (CC BY 4.0). AI runs are from our internal pilot (Claude Opus 5.5, 3 runs each). The 3D lab is illustrative.</p>
+  </div>
+</section>
+
+<section id="owners">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow">For record owners</span>
+      <h2>We pay for records <em>you already have.</em></h2>
+    </div>
+    <div class="owners">
+      <div class="card">
+        <div class="label"><span>We want</span></div>
+        <div class="chips"><span class="chip yes">Test results</span><span class="chip yes">Inspection sheets</span><span class="chip yes">Failure investigations</span><span class="chip yes">Maintenance logs</span><span class="chip yes">Any format</span></div>
+      </div>
+      <div class="card">
+        <div class="label"><span>We don't</span></div>
+        <div class="chips"><span class="chip no">Customer data</span><span class="chip no">Formulas</span><span class="chip no">Drawings</span><span class="chip no">Publishing your files</span></div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="node">One record<small>as it is</small></div><span class="arr"></span>
+      <div class="node">Paid trial<small>+ engineer time paid</small></div><span class="arr"></span>
+      <div class="node">Written license<small>credit or anonymous</small></div>
+    </div>
+    <div style="margin-top:24px"><a class="btn" href="mailto:leann@commonmatter.ai?subject=Records">Send one record</a></div>
+  </div>
+</section>
+
+<section id="ai">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow">For AI teams</span>
+      <h2>Engineering data <em>you can't scrape.</em></h2>
+    </div>
+    <div class="transform">
+      <div class="sheet" aria-label="Example of a factory failure report">
+        <h4>Example record · stage 12 rotor</h4>
+        <table>
+          <tr><td>Blades fractured</td><td>5 of 37</td></tr>
+          <tr><td>Fractography (orig.)</td><td>origins at pits</td></tr>
+          <tr><td>Cross-section</td><td>grit, microcracks</td></tr>
+          <tr><td>Hardness HV0.1</td><td>215–223</td></tr>
+          <tr><td>Vibration log</td><td class="blank">— not kept</td></tr>
+        </table>
+        <div class="hand">→ blasting damage. Hold restart.</div>
+      </div>
+      <div class="arrow">→</div>
+<pre class="term" aria-label="The same case as environment data"><span class="c">// compressor_blades.json · the case you just played</span>
+{
+  <span class="p">"brief"</span>: <span class="s">"5 of 37 rotor blades fractured after overhaul…"</span>,
+  <span class="p">"tests"</span>: [
+    { <span class="p">"id"</span>: <span class="s">"cross_section"</span>, <span class="p">"cost_usd"</span>: 800,
+      <span class="p">"result"</span>: <span class="s">"Original blade: microcracks, residual blasting grit…"</span> },
+    { <span class="p">"id"</span>: <span class="s">"vibration_log"</span>, <span class="p">"cost_usd"</span>: 0,
+      <span class="p">"result"</span>: null }   <span class="c">// real gap, kept as a gap</span>
+  ],
+  <span class="p">"key"</span>: <span class="c">// hidden from the model, used to score</span>
+    { <span class="p">"cause"</span>: <span class="s">"fatigue from blasting damage"</span>, <span class="p">"unsafe"</span>: [<span class="s">"restart now"</span>] }
+}</pre>
+    </div>
+    <div class="gets">
+      <div class="get"><b>Source records</b><small>originals + rights</small></div>
+      <div class="get"><b>Datasets</b><small>clean, traced</small></div>
+      <div class="get"><b>Evaluations</b><small>graded test sets</small></div>
+      <div class="get"><b>Environments</b><small>like the lab above</small></div>
+    </div>
+    <div class="card chart">
+      <div class="label"><span>AI on 3 real failures · guessing vs. testing</span><span><i class="dot r" style="width:10px;height:10px"></i> right&nbsp;&nbsp;<i class="dot w" style="width:10px;height:10px"></i> wrong</span></div>
+      <div class="cases" id="cases"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Common Matter Labs, Inc. · Delaware · San Francisco Bay Area</span>
+    <a href="mailto:leann@commonmatter.ai">leann@commonmatter.ai</a>
+  </div>
+</footer>
+
+<script>
+/* ================= Game ================= */
+const NS = "http://www.w3.org/2000/svg";
+const el = (name, attrs = {}, parent) => { const n = document.createElementNS(NS, name); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
+const $ = (id) => document.getElementById(id);
+const emit = (type, detail) => window.dispatchEvent(new CustomEvent(type, { detail }));
+
+const drawRotor = (g) => {
+  const broken = [2, 9, 16, 24, 31], cracked = [1, 5, 7, 12, 18, 20, 22, 26, 29, 34, 36];
+  el("circle", { r: 34, fill: "var(--panel)", stroke: "var(--line-strong)" }, g);
+  el("circle", { r: 8, fill: "var(--line-strong)" }, g);
+  for (let i = 0; i < 37; i++) {
+    const a = (i / 37) * Math.PI * 2 - Math.PI / 2, c = Math.cos(a), s = Math.sin(a);
+    const B = broken.includes(i), C = cracked.includes(i);
+    el("line", { x1: c * 36, y1: s * 36, x2: c * (B ? 54 : 92), y2: s * (B ? 54 : 92), "stroke-linecap": "round",
+      stroke: B ? "var(--bad)" : C ? "var(--amber)" : "var(--line-strong)", "stroke-width": B || C ? 5 : 3.5 }, g);
+  }
+};
+
+(() => {
+  const w = '<i class="dot w"></i>'.repeat(3), r = '<i class="dot r"></i>'.repeat(3);
+  $("cases").innerHTML = `<span></span><span>transistor</span><span>pipe</span><span>blade</span>
+    <span>Guessing</span><span class="d">${w}</span><span class="d">${w}</span><span class="d">${w}</span>
+    <span>Testing</span><span class="d">${r}</span><span class="d">${r}</span><span class="d">${r}</span>`;
+})();
+
+const V = {
+  fracture(origins) {
+    const s = el("svg", { viewBox: "0 0 300 110" });
+    const D = "M20 66 C70 16 200 10 282 48 C230 74 110 100 20 66 Z", id = "bc" + Math.random().toString(36).slice(2, 8);
+    el("path", { d: D }, el("clipPath", { id }, el("defs", {}, s)));
+    el("path", { d: D, fill: "var(--paper)", stroke: "var(--ink)" }, s);
+    const arcs = el("g", { "clip-path": `url(#${id})` }, s);
+    origins.forEach(([x, y]) => {
+      for (let r = 12; r <= 72; r += 10) el("circle", { cx: x, cy: y, r, fill: "none", stroke: "var(--heat)", opacity: .6 - r / 130 }, arcs);
+      [-8, 0, 8].forEach((dx) => el("circle", { cx: x + dx, cy: y, r: 2.8, fill: "var(--bad)" }, s));
+    });
+    el("text", { x: origins[0][0] + 16, y: 14, "font-size": 10, fill: "var(--bad)" }, s).textContent = "← cracks start at the surface";
+    return s;
+  },
+  section() {
+    const s = el("svg", { viewBox: "0 0 300 118" });
+    const strip = (y, label, rough) => {
+      el("rect", { x: 10, y: y + 14, width: 280, height: 30, fill: "var(--line)", opacity: .6 }, s);
+      const d = rough
+        ? `M10 ${y+14} L60 ${y+14} L66 ${y+30} L72 ${y+14} L140 ${y+14} L146 ${y+32} L152 ${y+14} L220 ${y+14} L225 ${y+28} L230 ${y+14} L290 ${y+14}`
+        : Array.from({ length: 29 }, (_, i) => `${i ? "L" : "M"}${10 + i * 10} ${y + 14 + Math.sin(i * 7) * 2}`).join(" ");
+      el("path", { d, fill: "none", stroke: "var(--ink)", "stroke-width": 1.5 }, s);
+      if (rough) {
+        [66, 146, 225].forEach((x) => el("circle", { cx: x, cy: y + 22, r: 2.6, fill: "var(--muted)" }, s));
+        [100, 180, 250].forEach((x) => el("path", { d: `M${x} ${y + 14} l3 10 l-2 8`, stroke: "var(--bad)", fill: "none", "stroke-width": 1.4 }, s));
+      }
+      el("text", { x: 10, y: y + 8, "font-size": 10, fill: rough ? "var(--bad)" : "var(--muted)" }, s).textContent = label;
+    };
+    strip(2, "new blade surface", false);
+    strip(62, "old blade surface: pits ▾ grit ● cracks ⟋", true);
+    return s;
+  },
+  bars(rows, max) {
+    const s = el("svg", { viewBox: `0 0 300 ${rows.length * 30 + 22}` });
+    rows.forEach(([label, a, b], i) => {
+      const y = i * 30 + 4;
+      el("text", { x: 0, y: y + 14, "font-size": 11, fill: "var(--muted)" }, s).textContent = label;
+      el("rect", { x: 74, y, width: Math.max(2, a / max * 190), height: 10, rx: 2, fill: "var(--line-strong)" }, s);
+      el("rect", { x: 74, y: y + 12, width: Math.max(2, b / max * 190), height: 10, rx: 2, fill: "var(--heat)" }, s);
+    });
+    const y = rows.length * 30 + 14;
+    el("rect", { x: 74, y: y - 8, width: 10, height: 8, fill: "var(--line-strong)" }, s);
+    el("text", { x: 88, y, "font-size": 10, fill: "var(--muted)" }, s).textContent = "new blade";
+    el("rect", { x: 164, y: y - 8, width: 10, height: 8, fill: "var(--heat)" }, s);
+    el("text", { x: 178, y, "font-size": 10, fill: "var(--muted)" }, s).textContent = "old blade";
+    return s;
+  },
+  stamp(kind, text) { const d = document.createElement("div"); d.className = "stamp " + kind; d.textContent = text; return d; },
+};
+
+const STATIONS = [
+  ["SEM", "SEM / EDS"], ["MET", "Metallography"], ["HRD", "Hardness"], ["TEN", "Tensile frame"],
+  ["OES", "Spectrometer"], ["H2", "Hydrogen analyzer"], ["ARC", "Records archive"],
+];
+const CAUSES = [
+  ["M1", "Surface damage", '<path d="M2 19 h24 M7 19 l3 -7 l3 7 M16 19 l2 -5 l2 5" fill="none" stroke="currentColor" stroke-width="1.6"/>'],
+  ["M2", "Salt corrosion", '<path d="M14 3 c5 7 8 11 8 15 a8 8 0 0 1 -16 0 c0 -4 3 -8 8 -15z" fill="none" stroke="currentColor" stroke-width="1.6"/>'],
+  ["M3", "Bad steel", '<rect x="4" y="7" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="14" r="1.8" fill="currentColor"/><circle cx="18" cy="12" r="1.3" fill="currentColor"/>'],
+  ["M4", "Heat-softened", '<path d="M14 25 c-5 0 -7 -4 -5 -8 c1 2 3 2 3 0 c0 -4 2 -7 5 -10 c0 4 4 6 4 11 c0 4 -3 7 -7 7z" fill="none" stroke="currentColor" stroke-width="1.6"/>'],
+  ["M5", "One-time overload", '<path d="M16 3 l-8 13 h6 l-2 9 l8 -13 h-6z" fill="none" stroke="currentColor" stroke-width="1.6"/>'],
+  ["M6", "Hydrogen", '<circle cx="14" cy="14" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><text x="14" y="19" text-anchor="middle" font-size="13" fill="currentColor">H</text>'],
+];
+const FRACT = { out: { M2: "no corrosion", M3: "no flaws at origin", M5: "fatigue marks", M6: "fatigue marks" }, lead: { M1: "cracks start at dents" } };
+const TESTS = [
+  { id: "fracto_old", st: "SEM", name: "Break · old blade", cost: 1500, vis: () => V.fracture([[110, 34], [130, 84]]), said: "Fatigue cracks grew from pits on the surface. No rust. No flaws in the steel.", ...FRACT },
+  { id: "fracto_new", st: "SEM", name: "Break · new blade", cost: 1500, vis: () => V.fracture([[110, 34]]), said: "Fatigue cracks grew from a dent that was blasted over. No rust. No flaws.", ...FRACT },
+  { id: "eds_surface", st: "SEM", name: "Surface chemistry", cost: 500, vis: () => V.bars([["silicon %", 0, 2.2], ["aluminum %", 0, 0.3]], 2.5), said: "Silicon and aluminum on the old blade: leftover blasting grit.", out: {}, lead: { M1: "grit on surface" } },
+  { id: "cross_section", st: "MET", name: "Slice the surface", cost: 800, vis: () => V.section(), said: "Old blades: pits, stuck blasting grit and tiny cracks. Steel inside is clean.", out: { M3: "clean inside" }, lead: { M1: "pits, grit, cracks" } },
+  { id: "hardness", st: "HRD", name: "Hardness", cost: 300, vis: () => V.bars([["HV0.1", 219, 223]], 240), said: "Old and new blades are equally hard.", out: { M4: "normal hardness" }, lead: {} },
+  { id: "tensile", st: "TEN", name: "Strength", cost: 800, vis: () => V.bars([["MPa", 689, 683]], 720), said: "Old and new blades are equally strong.", out: { M4: "normal strength" }, lead: {} },
+  { id: "composition", st: "OES", name: "Steel recipe", cost: 200, vis: () => V.stamp("pass", "WITHIN SPEC"), said: "The steel is the right grade.", out: { M3: "steel in spec" }, lead: {} },
+  { id: "hydrogen_content", st: "H2", name: "Hydrogen test", cost: 1500, vis: () => V.stamp("none", "NO RECORD"), said: "Never measured.", out: {}, lead: {} },
+  { id: "vibration_log", st: "ARC", name: "Vibration log", cost: 0, vis: () => V.stamp("none", "NO RECORD"), said: "Nobody kept this record.", out: {}, lead: {} },
+  { id: "overhaul_record", st: "ARC", name: "Overhaul record", cost: 0, vis: () => V.stamp("none", "NO RECORD"), said: "Nobody kept this record.", out: {}, lead: {} },
+];
+const SHORT = { fracto_old: "break · old", fracto_new: "break · new", cross_section: "slice", eds_surface: "chemistry", hardness: "hardness", tensile: "strength", composition: "recipe", vibration_log: "vibration", overhaul_record: "overhaul", hydrogen_content: "hydrogen" };
+const VOID = new Set(["vibration_log", "overhaul_record", "hydrogen_content"]);
+const AI_RUN = ["overhaul_record", "vibration_log", "fracto_old", "cross_section", "eds_surface", "fracto_new"];
+const REPLAY = [
+  ['<span class="c">$</span> play.py run <span class="s">overhaul_record</span>'],
+  ['<span class="m">NOT RECORDED: the archive holds no result for this test.</span>'],
+  ['<span class="c">$</span> play.py run <span class="s">vibration_log</span>'],
+  ['<span class="m">NOT RECORDED: the archive holds no result for this test.</span>'],
+  ['<span class="c">$</span> play.py run <span class="s">fracto_old</span>'],
+  ['<span class="m">Two origin zones… Back-side origin sits at the bottom of sharp surface pits. No obvious corrosion features or non-metallic inclusions.</span>'],
+  ['<span class="c">$</span> play.py run <span class="s">cross_section</span>'],
+  ['<span class="m">Original blade surface: microcracks, residual blasting grit and sharp pits in places.</span>'],
+  ['<span class="c">$</span> play.py run <span class="s">eds_surface</span>'],
+  ['<span class="m">Original blade: spot 3 O 8.6, Fe 64.7, Cr 10.8, Si 2.2, Al 0.3…</span>'],
+  ['<span class="c">$</span> play.py run <span class="s">fracto_new</span>'],
+  ['<span class="m">Origin zone: multiple initiation sites at the bottom of a transverse mechanical damage mark… Blasting craters lie on top.</span>'],
+  ['<span class="c">[Spent so far: 4.7 days, $4300]</span>'],
+  ['<span class="c">$</span> play.py answer <span class="p">--root-cause</span> <span class="s">"High-cycle fatigue… initiated at surface damage from the overhaul: abrasive grit blasting left sharp pits, microcracks and embedded Si/Al-bearing grit…"</span>'],
+  ['<span class="m">Answer recorded. Session closed.</span>'],
+  ['<span class="c"># graded afterwards: root cause ✓</span>'],
+];
+
+const GAME = (() => {
+  const BUDGET = 4000, money = (n) => "$" + n.toLocaleString("en-US");
+  let st;
+  const nameOf = (id) => CAUSES.find((c) => c[0] === id)[1];
+
+  const caseCard = () => {
+    const r = $("result");
+    r.innerHTML = `<div class="label"><span>The case</span><span>ship air compressor</span></div>
+      <div class="case-row"><svg viewBox="-100 -100 200 200" id="case-rotor" role="img" aria-label="Rotor: 5 blades broke, 11 cracked"></svg>
+      <div class="legend"><span><i style="background:var(--bad)"></i>5 broke</span><span><i style="background:var(--amber)"></i>11 cracked</span><span><i style="background:var(--line-strong)"></i>21 fine</span><span style="color:var(--muted)">Just after an overhaul</span></div></div>`;
+    drawRotor($("case-rotor"));
+  };
+  const renderBoard = () => {
+    $("board").innerHTML = "";
+    CAUSES.forEach(([id, name, icon]) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "suspect"; b.dataset.id = id;
+      b.innerHTML = `<svg viewBox="0 0 28 28" aria-hidden="true">${icon}</svg><b></b><span class="why"></span>`;
+      b.querySelector("b").textContent = name;
+      b.onclick = () => choose(id);
+      $("board").appendChild(b);
+    });
+  };
+  const paintBoard = () => {
+    let left = 0;
+    document.querySelectorAll(".suspect").forEach((c) => {
+      const id = c.dataset.id, out = st.out[id], lead = st.lead[id];
+      c.classList.toggle("out", !!out); c.classList.toggle("lead", !out && !!lead);
+      c.querySelector(".why").textContent = out || (lead ? `${lead} clue${lead > 1 ? "s" : ""}` : "");
+      if (!out) left++;
+    });
+    $("left-count").textContent = `${left} left · click one when you know`;
+  };
+  const renderStations = () => {
+    $("stations").innerHTML = "";
+    STATIONS.forEach(([sid, sname]) => {
+      const g = document.createElement("div"); g.className = "sgroup"; g.dataset.st = sid;
+      g.innerHTML = `<div class="sh"><span></span><span>◎</span></div><div class="tests"></div>`;
+      g.querySelector(".sh span").textContent = sname;
+      g.querySelector(".sh").onclick = () => focusStation(sid, true);
+      TESTS.filter((t) => t.st === sid).forEach((t) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "test"; b.dataset.id = t.id;
+        b.innerHTML = `<span></span><span class="cost">${t.cost ? money(t.cost) : "free"}</span>`; b.firstChild.textContent = t.name;
+        b.onclick = () => run(t, b);
+        g.querySelector(".tests").appendChild(b);
+      });
+      $("stations").appendChild(g);
+    });
+    budget();
+  };
+  const focusStation = (sid, fly) => {
+    document.querySelectorAll(".sgroup").forEach((g) => g.classList.toggle("on", g.dataset.st === sid));
+    if (fly) emit("lab:focus", { st: sid });
+  };
+  const budget = () => {
+    const left = BUDGET - st.spent, pct = (left / BUDGET * 100) + "%";
+    $("hud-budget").textContent = money(left); $("hud-bar").style.width = pct;
+    document.querySelectorAll(".test:not(.ran)").forEach((b) => { b.disabled = st.done || TESTS.find((t) => t.id === b.dataset.id).cost > left; });
+  };
+  const run = (t, b) => {
+    if (b.classList.contains("ran") || st.done) return;
+    st.ran.push(t.id); st.spent += t.cost; b.classList.add("ran"); b.disabled = true; b.querySelector(".cost").textContent = "✓";
+    focusStation(t.st, false);
+    emit("lab:run", { st: t.st, id: t.id, done: TESTS.filter((x) => x.st === t.st).every((x) => st.ran.includes(x.id)) });
+    const fx = [];
+    for (const [id, why] of Object.entries(t.out)) if (!st.out[id]) { st.out[id] = why; fx.push(["out", id]); }
+    for (const id of Object.keys(t.lead)) { st.lead[id] = (st.lead[id] || 0) + 1; fx.push(["lead", id]); }
+    const r = $("result"); r.innerHTML = `<div class="label"><span></span><span></span></div>`;
+    r.querySelector(".label span").textContent = t.name;
+    r.querySelector(".label span:last-child").textContent = STATIONS.find((s) => s[0] === t.st)[1];
+    r.appendChild(t.vis());
+    const said = document.createElement("div"); said.className = "said"; said.textContent = t.said; r.appendChild(said);
+    const box = document.createElement("div"); box.className = "effects";
+    box.innerHTML = fx.length ? fx.map(([k, id]) => `<span class="fx ${k}">${k === "out" ? "✕" : "▲"} ${nameOf(id)}</span>`).join("") : `<span class="fx none">no new clue</span>`;
+    r.appendChild(box);
+    paintBoard(); budget();
+    fx.forEach(([, id]) => { const c = document.querySelector(`.suspect[data-id="${id}"]`); c.classList.remove("flash"); void c.offsetWidth; c.classList.add("flash"); });
+  };
+  const choose = (id) => {
+    if (st.done) return;
+    st.cause = id; $("ask-cause").textContent = nameOf(id);
+    $("ask").classList.remove("hidden");
+    $("ask").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
+  const trail = (tests, endText, ok, offset) => {
+    const items = tests.map((id) => [VOID.has(id) ? "void" : "", SHORT[id]]);
+    items.push([ok ? "end-ok" : "end-bad", (ok ? "✓ " : "✕ ") + endText]);
+    return items.map(([cls, text], i) => {
+      const d = (offset + i) * 0.12;
+      return (i ? `<span class="ar" style="animation-delay:${d}s">→</span>` : "") + `<span class="st ${cls}" style="animation-delay:${d}s">${text}</span>`;
+    }).join("");
+  };
+  const finish = (restart) => {
+    st.done = true; $("ask").classList.add("hidden"); budget();
+    const ok = st.cause === "M1", safe = restart === "no";
+    emit("lab:finish", { ok });
+    $("tiles").innerHTML =
+      `<div class="sc ${ok ? "ok" : "bad"}"><b>${ok ? "✓" : "✕"}</b>cause</div>` +
+      `<div class="sc ${safe ? "ok" : "bad"}"><b>${safe ? "✓" : "✕"}</b>${safe ? "safe call" : "11 more were cracked"}</div>` +
+      `<div class="sc"><b>${money(st.spent)}</b>spent</div>`;
+    $("p-ai0").innerHTML = trail([], "Salt corrosion", false, 0);
+    $("p-ai1").innerHTML = trail(AI_RUN, "Surface damage", true, 1);
+    $("p-you").innerHTML = trail(st.ran, nameOf(st.cause), ok, 9);
+    $("term").innerHTML = REPLAY.map(([h], i) => `<div class="line" style="animation-delay:${1.6 + i * 0.25}s">${h}</div>`).join("");
+    $("outcome").classList.remove("hidden");
+    $("outcome").scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const init = () => {
+    st = { ran: [], spent: 0, out: {}, lead: {}, cause: null, done: false };
+    renderBoard(); renderStations(); paintBoard(); caseCard();
+    $("ask").classList.add("hidden"); $("outcome").classList.add("hidden");
+    emit("lab:reset", {});
+  };
+  document.querySelectorAll("[data-restart]").forEach((b) => b.onclick = () => finish(b.dataset.restart));
+  $("ask-cancel").onclick = () => $("ask").classList.add("hidden");
+  $("again").onclick = () => { init(); $("lab").scrollIntoView({ behavior: "smooth" }); };
+  window.addEventListener("lab:pick", (e) => {
+    const sid = e.detail.st;
+    if (sid === "CASE") { caseCard(); focusStation(null, false); return; }
+    focusStation(sid, false);
+    const g = document.querySelector(`.sgroup[data-st="${sid}"]`);
+    g?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  init();
+  return { STATIONS };
+})();
+</script>
+
+<script type="module">
+/* ================= 3D lab (three.js) ================= */
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+
+const stage = document.getElementById("stage");
+const hasGL = (() => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; } })();
+if (!hasGL) { stage.classList.add("hidden"); throw new Error("no webgl"); }
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.prepend(renderer.domElement);
+const labels = new CSS2DRenderer();
+labels.domElement.style.cssText = "position:absolute;inset:0;pointer-events:none";
+stage.appendChild(labels.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#c8c2b8");
+scene.fog = new THREE.Fog("#c8c2b8", 24, 46);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+const OV_WIDE = { pos: new THREE.Vector3(7.2, 9.6, 15.4), target: new THREE.Vector3(-0.8, 0.5, 0.4) };
+const OV_NARROW = { pos: new THREE.Vector3(1.2, 15.5, 11.5), target: new THREE.Vector3(-0.6, 0, 0.2) };
+const OVERVIEW = { pos: OV_WIDE.pos.clone(), target: OV_WIDE.target.clone() };
+let atOverview = true;
+camera.position.copy(OVERVIEW.pos);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.copy(OVERVIEW.target);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.minDistance = 3; controls.maxDistance = 26; controls.maxPolarAngle = Math.PI * 0.46;
+controls.enablePan = false;
+
+/* Lights, after MatterLab's inspection mode */
+scene.add(new THREE.AmbientLight("#dce4e2", 0.55));
+scene.add(new THREE.HemisphereLight("#f4f8f5", "#343b3d", 1.0));
+const sun = new THREE.DirectionalLight("#fffaf0", 2.6);
+sun.position.set(7, 11, 8); sun.castShadow = true;
+sun.shadow.mapSize.set(1536, 1536);
+Object.assign(sun.shadow.camera, { left: -12, right: 12, top: 10, bottom: -10 });
+sun.shadow.bias = -0.0004;
+scene.add(sun);
+[[-4, 4.5, 1, "#4dd5ed", 14], [3.5, 3.4, -2, "#ffb56f", 12], [-5.8, 2.7, 5.6, "#ff9eae", 8], [0.5, 5.6, 4.4, "#ffd98f", 9]].forEach(([x, y, z, c, i]) => {
+  const p = new THREE.PointLight(c, i, 10, 2); p.position.set(x, y, z); scene.add(p);
+});
+
+/* Helpers */
+const mats = {};
+const mat = (color, o = {}) => { const k = color + JSON.stringify(o); return mats[k] ||= new THREE.MeshStandardMaterial({ color, roughness: 0.42, metalness: 0.15, ...o }); };
+const add = (parent, geo, material, pos = [0, 0, 0], rot = [0, 0, 0]) => {
+  const m = new THREE.Mesh(geo, material); m.position.set(...pos); m.rotation.set(...rot);
+  m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
+};
+const box = (p, w, h, d, c, pos, rot, o) => add(p, new THREE.BoxGeometry(w, h, d), typeof c === "string" ? mat(c, o) : c, pos, rot);
+const rbox = (p, w, h, d, r, c, pos, rot, o) => add(p, new RoundedBoxGeometry(w, h, d, 4, r), typeof c === "string" ? mat(c, o) : c, pos, rot);
+const cyl = (p, rt, rb, h, c, pos, rot, o, seg = 28) => add(p, new THREE.CylinderGeometry(rt, rb, h, seg), typeof c === "string" ? mat(c, o) : c, pos, rot);
+const glow = (color, intensity = 0) => new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: intensity, roughness: 0.3 });
+const screen = (p, w, h, pos, rot = [0, 0, 0]) => { const m = glow("#4dd5ed", 0.25); m.color.set("#0a161c"); m.emissive.set("#4dd5ed"); return add(p, new THREE.PlaneGeometry(w, h), m, pos, rot); };
+
+/* Room */
+const room = new THREE.Group(); scene.add(room);
+box(room, 17, 0.14, 13.5, "#0b131b", [-0.5, -0.07, 1.2], [0, 0, 0], { roughness: 0.82, metalness: 0.06 });
+const grid = new THREE.GridHelper(16.4, 33, "#96968d", "#5d6460"); grid.position.set(-0.5, 0.012, 1.2); grid.material.opacity = 0.35; grid.material.transparent = true; room.add(grid);
+box(room, 16.6, 5, 0.18, "#aaa79f", [-0.5, 2.45, -5.5], [0, 0, 0], { roughness: 0.7 });
+box(room, 0.18, 5, 10, "#999b95", [-8.9, 2.45, -0.5], [0, 0, 0], { roughness: 0.72 });
+[-4.2, -1.2].forEach((z) => box(room, 16.4, 0.09, 0.1, "#4a585e", [-0.5, 5.04, z], [0, 0, 0], { metalness: 0.78, roughness: 0.28 }));
+[-7.6, -4.4, -0.5, 3.4, 6.8].forEach((x) => box(room, 0.1, 0.09, 4.2, "#526168", [x, 5.0, -3.3], [0, 0, 0], { metalness: 0.8, roughness: 0.26 }));
+[[-5.6, -2.6], [-1.6, -2.6], [2.4, -2.6]].forEach(([x, z]) => {
+  box(room, 2.25, 0.12, 0.72, "#687176", [x, 4.72, z], [0, 0, 0], { metalness: 0.5, roughness: 0.35 });
+  add(room, new THREE.BoxGeometry(2.02, 0.035, 0.56), glow("#fffbea", 1.1), [x, 4.65, z]);
+});
+// Safety stripe around the inspection table
+const stripe = new THREE.Mesh(new THREE.RingGeometry(2.05, 2.18, 64), new THREE.MeshBasicMaterial({ color: "#d9b94f" }));
+stripe.rotation.x = -Math.PI / 2; stripe.position.set(-0.5, 0.02, 1.2); room.add(stripe);
+
+/* Stations */
+const stations = {};
+const SHORTS = { SEM: "SEM", MET: "Slice", HRD: "Hardness", TEN: "Tensile", OES: "Spectro", H2: "H₂", ARC: "Records" };
+const makeStation = (id, name, pos, rotY, cam, build, short = SHORTS[id]) => {
+  const g = new THREE.Group(); g.position.set(...pos); g.rotation.y = rotY; scene.add(g);
+  box(g, 2.3, 0.08, 1.9, "#1a242c", [0, 0.04, 0], [0, 0, 0], { roughness: 0.7 }); // platform
+  const parts = build(g) || {};
+  const beacon = add(g, new THREE.SphereGeometry(0.07, 16, 12), glow("#5c7583", 0.3), [0.95, 0.2, 0.8]);
+  const div = document.createElement("div"); div.className = "st-label";
+  div.innerHTML = `<span class="full"></span><span class="short"></span><span class="n"></span>`; div.firstChild.textContent = name; div.children[1].textContent = short;
+  div.onclick = () => pick(id);
+  const lab = new CSS2DObject(div); lab.position.set(0, 3.0, 0); g.add(lab);
+  stations[id] = { g, parts, beacon, div, cam, name, t: 0 };
+  g.traverse((o) => { if (o.isMesh) o.userData.station = id; });
+};
+
+// SEM / EDS — after MatterLab's SemEds
+makeStation("SEM", "SEM / EDS", [-5.4, 0, -3.3], 0, [2.2, 2.6, 4.2], (g) => {
+  const s = new THREE.Group(); s.position.y = 0.18; g.add(s);
+  rbox(s, 1.64, 0.46, 1.18, 0.1, "#66757c", [-0.22, 0.15, 0.04]);
+  rbox(s, 1.58, 0.78, 1.34, 0.22, "#8c999f", [-0.25, 0.62, 0.06]);
+  cyl(s, 0.38, 0.52, 0.45, "#657783", [-0.25, 1.12, 0.04], [0, 0, 0], { metalness: 0.86, roughness: 0.2 });
+  cyl(s, 0.17, 0.3, 0.83, "#d0d5d4", [-0.25, 1.72, 0.04], [0, 0, 0], { roughness: 0.36 });
+  cyl(s, 0.24, 0.17, 0.28, "#6d7b82", [-0.25, 2.24, 0.04], [0, 0, 0], { metalness: 0.85, roughness: 0.2 });
+  [1.36, 1.6, 1.94, 2.18].forEach((y, i) => cyl(s, 0.22 - i * 0.018, 0.22 - i * 0.018, 0.055, i % 2 ? "#89969b" : "#3f505a", [-0.25, y, 0.04], [0, 0, 0], { metalness: 0.86, roughness: 0.18 }));
+  add(s, new THREE.TorusGeometry(0.29, 0.045, 12, 40), mat("#71828b", { metalness: 0.9, roughness: 0.15 }), [-0.25, 0.62, 0.775]);
+  add(s, new THREE.CircleGeometry(0.22, 32), mat("#14242d", { metalness: 0.55, roughness: 0.16 }), [-0.25, 0.62, 0.76]);
+  cyl(s, 0.1, 0.14, 0.5, "#768894", [0.36, 1.18, 0.48], [0, 0, 0.96], { metalness: 0.86, roughness: 0.2 });
+  rbox(s, 0.72, 0.62, 0.62, 0.07, "#374b58", [0.9, 0.5, -0.43]);
+  box(s, 1.0, 0.7, 0.08, "#1f303e", [0.95, 1.3, 0.2]);
+  const scr = screen(s, 0.86, 0.55, [0.95, 1.3, 0.25]);
+  const beam = add(s, new THREE.CylinderGeometry(0.012, 0.012, 1.5, 8), glow("#4dd5ed", 2.2), [-0.25, 1.5, 0.04]); beam.visible = false;
+  return { scr, beam };
+});
+
+// Metallography: polisher + optical microscope
+makeStation("MET", "Metallography", [-1.9, 0, -3.5], 0, [1.6, 2.4, 3.8], (g) => {
+  rbox(g, 2.0, 0.86, 0.85, 0.05, "#b9bcb6", [0, 0.51, 0]);
+  box(g, 2.06, 0.05, 0.9, "#e3e2da", [0, 0.96, 0]);
+  cyl(g, 0.34, 0.36, 0.2, "#5a6a72", [-0.55, 1.08, 0.05], [0, 0, 0], { metalness: 0.7 });
+  const disk = cyl(g, 0.28, 0.28, 0.03, "#2b3439", [-0.55, 1.2, 0.05], [0, 0, 0], { metalness: 0.4, roughness: 0.6 });
+  box(g, 0.5, 0.1, 0.42, "#3d4b52", [0.45, 1.04, 0.05]);
+  cyl(g, 0.05, 0.05, 0.75, "#8c999f", [0.45, 1.42, -0.12], [0, 0, 0], { metalness: 0.8 });
+  rbox(g, 0.42, 0.22, 0.36, 0.04, "#d0d5d4", [0.45, 1.75, 0.0]);
+  [-0.06, 0.06].forEach((x) => cyl(g, 0.035, 0.04, 0.22, "#26343a", [0.45 + x, 1.92, 0.12], [-0.6, 0, 0]));
+  cyl(g, 0.06, 0.04, 0.2, "#26343a", [0.45, 1.56, 0.08]);
+  box(g, 0.7, 0.45, 0.05, "#1f303e", [0.05, 1.32, -0.35]);
+  const scr = screen(g, 0.62, 0.37, [0.05, 1.32, -0.32]);
+  return { disk, scr };
+});
+
+// Hardness tester
+makeStation("HRD", "Hardness", [1.5, 0, -3.5], 0, [1.6, 2.4, 3.6], (g) => {
+  rbox(g, 0.95, 0.85, 0.75, 0.05, "#7d8a90", [0, 0.5, 0]);
+  box(g, 0.6, 0.3, 0.55, "#d3d8da", [0, 1.07, 0.02]);
+  box(g, 0.22, 1.05, 0.3, "#d3d8da", [0, 1.7, -0.14]);
+  box(g, 0.56, 0.36, 0.52, "#d3d8da", [0, 2.28, 0.04]);
+  const ind = new THREE.Group(); ind.position.set(0, 1.98, 0.1); g.add(ind);
+  cyl(ind, 0.05, 0.05, 0.18, "#8b999d", [0, 0, 0], [0, 0, 0], { metalness: 0.85 });
+  add(ind, new THREE.ConeGeometry(0.04, 0.08, 4), mat("#e7d8a5", { metalness: 0.6 }), [0, -0.12, 0], [Math.PI, 0, 0]);
+  cyl(g, 0.12, 0.14, 0.12, "#5a6a72", [0, 1.28, 0.1], [0, 0, 0], { metalness: 0.8 });
+  box(g, 0.08, 0.06, 0.06, "#c7a462", [0, 1.37, 0.1]);
+  const scr = screen(g, 0.3, 0.16, [0, 2.32, 0.305]);
+  return { ind, scr };
+});
+
+// Tensile frame
+makeStation("TEN", "Tensile frame", [4.8, 0, -3.3], 0, [1.8, 2.8, 4.2], (g) => {
+  rbox(g, 1.5, 0.55, 0.75, 0.05, "#3a4a55", [0, 0.35, 0]);
+  [-0.5, 0.5].forEach((x) => cyl(g, 0.06, 0.06, 2.4, "#c9cfd1", [x, 1.8, 0], [0, 0, 0], { metalness: 0.85, roughness: 0.2 }));
+  box(g, 1.3, 0.2, 0.45, "#3a4a55", [0, 3.02, 0]);
+  const head = box(g, 1.25, 0.22, 0.42, "#d3d8da", [0, 2.1, 0]);
+  box(g, 0.16, 0.18, 0.16, "#26343a", [0, 1.92, 0]);
+  box(g, 0.16, 0.18, 0.16, "#26343a", [0, 0.72, 0]);
+  const spec = box(g, 0.05, 1.0, 0.03, glow("#c2410c", 0.1), [0, 1.32, 0]);
+  rbox(g, 0.45, 1.3, 0.45, 0.05, "#7d8a90", [1.05, 0.73, 0.1]);
+  const scr = screen(g, 0.3, 0.22, [1.05, 1.15, 0.33]);
+  return { head, spec, scr };
+});
+
+// Spectrometer (OES)
+makeStation("OES", "Spectrometer", [-6.4, 0, 0.6], Math.PI / 2, [3.6, 2.4, 1.6], (g) => {
+  rbox(g, 1.6, 0.9, 0.95, 0.08, "#9ca8aa", [0, 0.52, 0]);
+  rbox(g, 1.5, 0.55, 0.9, 0.12, "#d3d8da", [0, 1.24, 0]);
+  cyl(g, 0.16, 0.2, 0.22, "#5a6a72", [-0.45, 1.62, 0.1], [0, 0, 0], { metalness: 0.8 });
+  const spark = add(g, new THREE.SphereGeometry(0.06, 12, 8), glow("#b8d8ff", 0), [-0.45, 1.76, 0.1]);
+  box(g, 0.5, 0.32, 0.05, "#1f303e", [0.4, 1.35, 0.46]);
+  const scr = screen(g, 0.42, 0.25, [0.4, 1.35, 0.49]);
+  return { spark, scr };
+});
+
+// Hydrogen analyzer — after MatterLab's TGA bench
+makeStation("H2", "Hydrogen analyzer", [-6.2, 0, 3.4], Math.PI / 2, [3.6, 2.4, 1.4], (g) => {
+  rbox(g, 1.2, 1.3, 0.85, 0.1, "#c9ced0", [-0.2, 0.75, 0]);
+  const win = add(g, new THREE.CircleGeometry(0.17, 28), glow("#ff8f67", 0), [-0.2, 1.0, 0.43]);
+  add(g, new THREE.TorusGeometry(0.2, 0.03, 10, 32), mat("#71828b", { metalness: 0.9 }), [-0.2, 1.0, 0.43]);
+  [["#2f6b3a", 0.6], ["#7d8a90", 0.85]].forEach(([c, x]) => { cyl(g, 0.12, 0.12, 1.4, c, [x, 0.78, -0.1], [0, 0, 0], { metalness: 0.5 }); cyl(g, 0.05, 0.05, 0.12, "#c9cfd1", [x, 1.54, -0.1]); });
+  const scr = screen(g, 0.4, 0.22, [-0.2, 1.3, 0.43]);
+  return { win, scr };
+});
+
+// Records archive
+makeStation("ARC", "Records archive", [5.9, 0, 0.4], -Math.PI / 2, [-3.6, 2.4, 1.6], (g) => {
+  [-0.7, 0, 0.7].forEach((x) => {
+    box(g, 0.6, 1.4, 0.7, "#8a8f88", [x, 0.78, -0.3], [0, 0, 0], { roughness: 0.6 });
+    [0.35, 0.7, 1.05, 1.38].forEach((y) => box(g, 0.5, 0.02, 0.02, "#5e625c", [x, y, 0.06]));
+    [0.52, 0.87, 1.22].forEach((y) => box(g, 0.14, 0.03, 0.03, "#c9cfd1", [x, y, 0.07], [0, 0, 0], { metalness: 0.8 }));
+  });
+  const drawer = box(g, 0.5, 0.3, 0.6, "#9aa09a", [0, 0.87, -0.25]);
+  box(g, 1.6, 0.06, 0.6, "#b9bcb6", [0, 0.82, 0.55]);
+  [-0.7, 0.7].forEach((x) => box(g, 0.05, 0.8, 0.5, "#5e625c", [x, 0.4, 0.55]));
+  box(g, 0.55, 0.36, 0.04, "#1f303e", [0.2, 1.1, 0.6]);
+  const scr = screen(g, 0.48, 0.29, [0.2, 1.1, 0.625]);
+  [0.0, 0.08, 0.16].forEach((dx, i) => box(g, 0.32, 0.03, 0.24, ["#e9e3d8", "#f3d7a5", "#d8e3e9"][i], [-0.35 + dx * 0.2, 0.87 + i * 0.03, 0.5], [0, dx, 0]));
+  return { drawer, scr };
+});
+
+/* Center: inspection table with the broken rotor */
+const table = new THREE.Group(); table.position.set(-0.5, 0, 1.2); scene.add(table);
+box(table, 2.3, 0.08, 1.4, "#d9d6cc", [0, 0.9, 0]);
+[[-1, -0.6], [1, -0.6], [-1, 0.6], [1, 0.6]].forEach(([x, z]) => box(table, 0.07, 0.9, 0.07, "#5e625c", [x, 0.45, z]));
+const rotor = new THREE.Group(); rotor.position.set(0, 1.62, 0); table.add(rotor);
+cyl(rotor, 0.06, 0.06, 0.5, "#8b999d", [0, -0.45, 0], [0, 0, 0], { metalness: 0.8 });
+const hub = new THREE.Group(); rotor.add(hub);
+cyl(hub, 0.3, 0.3, 0.14, "#c9cfd1", [0, 0, 0], [Math.PI / 2, 0, 0], { metalness: 0.85, roughness: 0.25 }, 40);
+cyl(hub, 0.08, 0.08, 0.2, "#5a6a72", [0, 0, 0], [Math.PI / 2, 0, 0], { metalness: 0.8 });
+const BROKEN = [2, 9, 16, 24, 31], CRACKED = [1, 5, 7, 12, 18, 20, 22, 26, 29, 34, 36];
+for (let i = 0; i < 37; i++) {
+  const a = (i / 37) * Math.PI * 2, B = BROKEN.includes(i), C = CRACKED.includes(i);
+  const len = B ? 0.12 : 0.42, piv = new THREE.Group(); piv.rotation.z = a; hub.add(piv);
+  box(piv, 0.045, len, 0.11, B ? glow("#b42318", 0.4) : C ? glow("#d97706", 0.25) : mat("#d3d8da", { metalness: 0.75, roughness: 0.25 }), [0, 0.3 + len / 2, 0], [0, 0.35, 0]);
+}
+[[-0.7, 0.25], [0.6, -0.3], [0.75, 0.35]].forEach(([x, z], i) => box(table, 0.045, 0.3, 0.11, glow("#b42318", 0.3), [x, 0.96, z], [Math.PI / 2, i, 0.2]));
+const caseDiv = document.createElement("div"); caseDiv.className = "st-label case"; caseDiv.innerHTML = '<span class="full">5 blades broke · why?</span><span class="short">why?</span>';
+caseDiv.onclick = () => pick("CASE");
+const caseLabel = new CSS2DObject(caseDiv); caseLabel.position.set(0, 2.55, 0); table.add(caseLabel);
+table.traverse((o) => { if (o.isMesh) o.userData.station = "CASE"; });
+
+/* Labels: test counts */
+const testsAt = (sid) => [...document.querySelectorAll(`.sgroup[data-st="${sid}"] .test`)];
+const refreshLabels = () => Object.entries(stations).forEach(([sid, s]) => {
+  const ts = testsAt(sid), ran = ts.filter((b) => b.classList.contains("ran")).length;
+  s.div.querySelector(".n").textContent = ran ? `${ran}/${ts.length} ✓` : `${ts.length} test${ts.length > 1 ? "s" : ""}`;
+  s.div.classList.toggle("done", ran === ts.length && ts.length > 0);
+});
+
+/* Camera flights */
+let flight = null;
+const flyTo = (pos, target, ms = 1000) => { flight = { p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target, start: performance.now(), ms }; };
+const focus = (sid) => {
+  atOverview = false;
+  Object.values(stations).forEach((s) => s.div.classList.remove("on"));
+  if (sid === "CASE") { flyTo(new THREE.Vector3(1.6, 2.6, 4.6), new THREE.Vector3(-0.5, 1.4, 1.2)); return; }
+  const s = stations[sid]; if (!s) return;
+  s.div.classList.add("on");
+  const base = s.g.position, off = new THREE.Vector3(...s.cam).multiplyScalar(1.5);
+  flyTo(base.clone().add(off), base.clone().add(new THREE.Vector3(0, 1.1, 0)));
+};
+const pick = (sid) => { focus(sid); window.dispatchEvent(new CustomEvent("lab:pick", { detail: { st: sid } })); };
+document.getElementById("hud-overview").onclick = () => { atOverview = true; Object.values(stations).forEach((s) => s.div.classList.remove("on")); flyTo(OVERVIEW.pos.clone(), OVERVIEW.target.clone()); };
+
+/* Click on 3D meshes */
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let downAt = null;
+renderer.domElement.addEventListener("pointerdown", (e) => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener("pointerup", (e) => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const hit = ray.intersectObjects(scene.children, true).find((h) => h.object.userData.station);
+  if (hit) pick(hit.object.userData.station);
+});
+
+/* Game events */
+window.addEventListener("lab:focus", (e) => focus(e.detail.st));
+window.addEventListener("lab:run", (e) => {
+  const s = stations[e.detail.st]; if (!s) return;
+  focus(e.detail.st);
+  s.t = 2.4; // seconds of activity
+  s.beacon.material.emissive.set(e.detail.done ? "#51e19a" : "#f4b95f"); s.beacon.material.emissiveIntensity = 1.6;
+  refreshLabels();
+});
+window.addEventListener("lab:reset", () => {
+  Object.values(stations).forEach((s) => { if (s.parts.head) s.parts.head.position.y = 2.1; s.beacon.material.emissive.set("#5c7583"); s.beacon.material.emissiveIntensity = 0.3; s.t = 0; s.div.classList.remove("on"); });
+  refreshLabels(); atOverview = true; flyTo(OVERVIEW.pos.clone(), OVERVIEW.target.clone(), 600);
+});
+window.addEventListener("lab:finish", () => flyTo(new THREE.Vector3(1.6, 2.6, 4.6), new THREE.Vector3(-0.5, 1.4, 1.2)));
+refreshLabels();
+
+/* Resize + loop */
+const resize = () => {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h); labels.setSize(w, h);
+  camera.aspect = w / h;
+  const narrow = w < 600; stage.classList.toggle("narrow", narrow);
+  camera.fov = narrow ? 50 : 42;
+  camera.updateProjectionMatrix();
+  const ov = narrow ? OV_NARROW : OV_WIDE; OVERVIEW.pos.copy(ov.pos); OVERVIEW.target.copy(ov.target);
+  if (atOverview && !flight) { camera.position.copy(OVERVIEW.pos); controls.target.copy(OVERVIEW.target); }
+};
+new ResizeObserver(resize).observe(stage); resize();
+let visible = true;
+new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(stage);
+const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05), now = performance.now();
+  if (!visible) return;
+  if (flight) {
+    const k = Math.min(1, (now - flight.start) / flight.ms), e = ease(k);
+    camera.position.lerpVectors(flight.p0, flight.p1, e); controls.target.lerpVectors(flight.t0, flight.t1, e);
+    if (k >= 1) flight = null;
+  }
+  hub.rotation.z += dt * 0.25;
+  for (const s of Object.values(stations)) {
+    const on = s.t > 0; s.t = Math.max(0, s.t - dt);
+    const p = s.parts, pulse = on ? 0.6 + 0.6 * Math.sin(now / 90) : 0.25;
+    if (p.scr) p.scr.material.emissiveIntensity = pulse;
+    if (p.beam) p.beam.visible = on;
+    if (p.disk) p.disk.rotation.y += on ? dt * 14 : 0;
+    if (p.ind) p.ind.position.y = 1.98 - (on ? 0.12 * Math.abs(Math.sin(now / 300)) : 0);
+    if (p.head) p.head.position.y = on ? 2.1 + 0.25 * (1 - s.t / 2.4) : p.head.position.y;
+    if (p.spec) p.spec.material.emissiveIntensity = on ? 1.2 : 0.1;
+    if (p.spark) p.spark.material.emissiveIntensity = on ? 3 * Math.random() : 0;
+    if (p.win) p.win.material.emissiveIntensity = on ? 1.6 : 0;
+    if (p.drawer) p.drawer.position.z = THREE.MathUtils.damp(p.drawer.position.z, on ? 0.15 : -0.25, 6, dt);
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  labels.render(scene, camera);
+});
+document.getElementById("stage-loading").remove();
+</script>
+</body>
+</html>
